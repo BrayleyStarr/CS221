@@ -76,8 +76,16 @@ end = struct
 					      	   
 				    	      	 
 		  	       	   
-		| A.Greater(a, b) =>  raise Fail "HAHA" 
-		
+		| A.Greater(a, b) =>  
+		                      (case a of
+                                       A.Zero => if (isNV b) then SOME(A.False) else raise Fail "Error"
+                                       | A.Succ(s) => (case b of
+                                                           A.Zero => if (isNV s) then SOME(A.True) else raise Fail "Error"
+                                                          | _ => (case (step a) of
+                                                                   SOME(x) => SOME(A.Greater(x, b))
+                                                                   | _ => (case (step b) of
+                                                                                SOME(z) => if (isV a) then SOME(A.Greater(a, z)) else raise Fail "Error"
+                                                                                | NONE => NONE))))
 		| A.And(a, b) => (case a of
 		  	      	   A.True => SOME(b)
 				   | A.False => SOME(A.False)
@@ -103,6 +111,9 @@ end = struct
 		| A.False => NONE)
 		
 
-  fun eval _ = raise Fail "todo"
+  fun eval _ = (case (step t) of
+                  SOME(x) => t :: x :: (eval t)
+                  | NONE => [])
+
 	 
 end
